@@ -35,8 +35,14 @@ while1 = some . satisfy
 sepBy :: Parser c a -> Parser c b -> Parser c [a]
 sepBy e s = (:) <$> e <*> many (s *> e)
 
--- chainl :: Parser c (b -> a -> b) -> Parser c b -> Parser c a -> Parser c a
--- chainl op p d = ((flip foldl) d) <$> op <*> sepBy p op
+chainl :: Parser c (a -> a -> a) -> Parser c a -> Parser c a -> Parser c a
+chainl op p = (chainl1 op p <|>)
 
 chainl1 :: Parser c (a -> a -> a) -> Parser c a -> Parser c a
-chainl1 op p = foldl1 <$> op <*> sepBy p op
+chainl1 op p = liftM2 foldl1 op (sepBy p op)
+
+chainr :: Parser c (a -> a -> a) -> Parser c a -> Parser c a -> Parser c a
+chainr op p = (chainl1 op p <|>)
+
+chainr1 :: Parser c (a -> a -> a) -> Parser c a -> Parser c a
+chainr1 op p = liftM2 foldr1 op (sepBy p op)
