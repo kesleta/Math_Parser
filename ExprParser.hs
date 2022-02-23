@@ -5,18 +5,11 @@ module ExprParser
 import           Control.Applicative
 import           Control.Monad
 import           Data.Char
+import           Expressions
 import qualified Parser                        as P
 import           Parser                  hiding ( Parser )
 
 type Parser a = P.Parser Char a
-
-data Expr = ExNum Double
-          | ExVar Char
-          | ExAdd Expr Expr
-          | ExSub Expr Expr
-          | ExMult Expr Expr
-          | ExFrac Expr Expr
-          deriving (Eq, Show, Read)
 
 w :: Parser ()
 w = void $ while isSpace
@@ -31,7 +24,7 @@ parseExpr :: String -> Maybe Expr
 parseExpr = fmap fst . runParser (expr <* eoi)
 
 expr :: Parser Expr
-expr = chainl1 factor (addP <|> subP)
+expr = chainl1 term (addP <|> subP)
  where
   addP = ExAdd <$ (w *> char '+' <* w)
   subP = ExSub <$ (w *> char '-' <* w)

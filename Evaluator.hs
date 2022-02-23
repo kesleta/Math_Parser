@@ -2,7 +2,7 @@ module Evaluator
   ( eval
   ) where
 import           Control.Monad
-import           ExprParser
+import           Expressions
 
 eval :: Expr -> Maybe Double
 eval (ExNum x     ) = Just x
