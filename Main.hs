@@ -1,7 +1,8 @@
 module Main where
-import ExprParser
-import Evaluator
-import Control.Monad
+import           Algebra
+import           Control.Monad
+import           Evaluator
+import           ExprParser
 
 main :: IO ()
 main = do

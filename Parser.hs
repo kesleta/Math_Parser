@@ -8,6 +8,9 @@ type Parser c a = StateT [c] Maybe a
 runParser :: StateT s m a -> s -> m (a, s)
 runParser = runStateT
 
+(<#>) :: Parser c a -> [c] -> Maybe (a, [c])
+(<#>) = runParser
+
 parser :: (s -> m (a, s)) -> StateT s m a
 parser = StateT
 
@@ -33,7 +36,7 @@ while1 :: (c -> Bool) -> Parser c [c]
 while1 = some . satisfy
 
 sepBy :: Parser c b -> Parser c a -> Parser c [a]
-sepBy s e = (sepBy1 s e) <|> (return [])
+sepBy s e = sepBy1 s e <|> return []
 
 sepBy1 :: Parser c b -> Parser c a -> Parser c [a]
 sepBy1 s e = (:) <$> e <*> many (s *> e)
@@ -56,15 +59,16 @@ chainr p op = (chainr1 p op <|>)
 
 chainr1 :: Parser c a -> Parser c (a -> a -> a) -> Parser c a
 chainr1 p op = scan
-  where
-    scan = do
-      x <- p
-      rest x
-    rest x = (do
-      f <- op
-      y <- scan
-      return (f x y))
-        <|> return x
+ where
+  scan = do
+    x <- p
+    rest x
+  rest x =
+    (do
+        f <- op
+        f x <$> scan
+      )
+      <|> return x
 
 eoi :: Parser c ()
 eoi = parser $ \case
@@ -73,5 +77,5 @@ eoi = parser $ \case
 
 anyChar :: Parser c c
 anyChar = parser $ \case
-  [] -> empty
-  (x:xs) -> return (x, xs)
+  []       -> empty
+  (x : xs) -> return (x, xs)
